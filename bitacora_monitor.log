@@ -1,0 +1,9 @@
+[1788278047.112] Réplica registrada: A en 127.0.0.1:5001
+[1788278047.113] Réplica registrada: B en 127.0.0.1:5002
+[1788278047.114] Réplica registrada: C en 127.0.0.1:5003
+[1788278047.116] Monitor Ping/Echo iniciado. T=1s, t=0.3s, k=2
+[1788278049.391] B VIVA -> CAIDA (tras 2 fallos consecutivos)
+[1788278049.701] C VIVA -> CAIDA (tras 2 fallos consecutivos)
+[1788278059.182] C CAÍDA -> VIVA (recuperada tras 7 fallos consecutivos)
+[1788278060.212] B CAÍDA -> VIVA (recuperada tras 8 fallos consecutivos)
+[1788278065.914] B VIVA -> CAIDA (tras 2 fallos consecutivos)

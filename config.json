@@ -1,0 +1,13 @@
+{
+  "T": 1,
+  "t": 0.3,
+  "k": 2,
+  "num_replicas": 3,
+  "replica_ids": ["A", "B", "C"],
+  "base_port": 5001,
+  "dispatcher_port": 5000,
+  "client_duration": 40,
+  "client_rate": 20,
+  "failure_inject_at_second": 15,
+  "saldo_default": 15000
+}
