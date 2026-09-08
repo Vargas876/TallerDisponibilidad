@@ -38,16 +38,29 @@ Todas las bitácoras, CSVs y `metrics.json` quedan en `results/` y `logs/`.
 
 ### Preguntas del taller (Q1–Q5)
 
-1. **¿Cuánto tarda en detectar una caída?** Estructura T=1s, t=0.3s, k=2 ⇒
-   T·k ≈ 2 s. Medido: **2.139 s** desde el CRASH (≤ 3 s requerido).
-2. **¿Continúa respondiendo durante la ventana de detección?** Sí: redundancia
-   activa atiende con las réplicas vivas y cancela las muertas. 100 % en E1.
-3. **¿Qué pasa si el ping pasa pero el saldo es inválido?** El monitor no lo ve,
-   pero la capa de redundancia descarta la respuesta corrupta (Q3 verificado).
-4. **¿La redundancia enmascara los fallos?** Sí: contadores internos de
-   `failed_requests` crecen mientras el cliente ve 0 fallos.
-5. **¿Cómo afecta el reparto y la latencia?** Reparto proporcional mientras
-   todas viven; latencia estable (FIRST_COMPLETED + cancelación).
+Las 5 preguntas del numeral 10 respondidas literalmente (análisis completo en
+`frontend/lib/preguntas.ts`, visible en **Resultados**):
+
+1. **¿El cliente dejó de responder antes o después de que el monitor detectara?**
+   Nunca: 800/800 exitosas. La caída se registró 2.139s después de la inyección,
+   pero la redundancia atendió con las vivas durante toda la ventana.
+2. **¿Solo Ping/Echo o solo redundancia bastarían?** No por separado: sin
+   redundancia el usuario percibe errores; sin monitor nadie sabe que la réplica
+   sigue muerta (no hay bitácora ni estado).
+3. **¿Detectaría un saldo incorrecto (ping OK)?** No: /ping mide alcanzabilidad,
+   no integridad. Lo cubre validar las respuestas en la capa redundante
+   (votación/contraste). Verificado en Q3 (148 descartados internos, 0 al cliente).
+4. **Disponibilidad 0.98 independiente:** con redundancia activa el sistema sirve
+   si vive al menos una réplica: 2 réplicas ⇒ 1 − 0.02² = **0.9996**; 3 réplicas
+   ⇒ 1 − 0.02³ = **0.999992**. El supuesto es falso cuando las réplicas comparten
+   un modo de falla (mismo host/switch/versión de software).
+5. **¿Nuevo punto único de falla?** Sí, el dispatcher concentra el tráfico: es
+   ahora multiplicador de disponibilidad. Mitigación: aplicarles el mismo
+   Ping/Echo y desplegarlo replicated/stateless (activo–activo).
+
+Nota: E1 se ejecutó dos veces y ambas detecciones fueron ≈2 s
+(2.175 s y 2.139 s), como exige el parámetro T·k; la evidencia queda en
+`logs/monitor.log` e `injection_e1.log`.
 
 ---
 
