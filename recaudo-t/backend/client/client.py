@@ -35,39 +35,57 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
-async def main_async(out: str, duration: int, rate: int, url: str, timeout: float):
+async def main_async(out: str, duration: int, rate: int, url: str, timeout: float, loop: bool):
     Path(out).parent.mkdir(parents=True, exist_ok=True)
-    tasks: list[asyncio.Task] = []
     deadline = time.time() + duration
     sent = 0
+    ok_total = fail_total = 0
+    all_rows: list[dict] = []
+    n = 0
 
     async with httpx.AsyncClient(timeout=timeout) as client:
-        while time.time() < deadline - 0.25:
+        while True:
+            tic = time.time()
             lote = [
                 asyncio.create_task(_request(client, url, _tarjeta(), time.time()))
                 for _ in range(rate)
             ]
-            tasks.extend(lote)
+            filas = await asyncio.gather(*lote, return_exceptions=True)
+            filas = [f for f in filas if isinstance(f, dict)]
+            ok = sum(1 for f in filas if f["exito"])
+            fail = len(filas) - ok
+            ok_total += ok
+            fail_total += fail
             sent += rate
-            await asyncio.sleep(1.0)
+            n += 1
+            all_rows.extend(filas)
 
-        filas = await asyncio.gather(*tasks, return_exceptions=True)
-        rows = [f for f in filas if isinstance(f, dict)]
-        with open(out, "w", newline="", encoding="utf-8") as fh:
-            w = csv.DictWriter(
-                fh,
-                fieldnames=["timestamp_envio", "timestamp_respuesta", "exito", "replica", "tarjeta", "latency_ms"],
-            )
-            w.writeheader()
-            for r in rows:
-                w.writerow(r)
+            if not loop:
+                if time.time() >= deadline - 0.25:
+                    with open(out, "w", newline="", encoding="utf-8") as fh:
+                        w = csv.DictWriter(
+                            fh,
+                            fieldnames=["timestamp_envio", "timestamp_respuesta", "exito", "replica", "tarjeta", "latency_ms"],
+                        )
+                        w.writeheader()
+                        for r in all_rows:
+                            w.writerow(r)
+                    exitos = sum(1 for r in all_rows if r["exito"])
+                    print(
+                        f"CLIENTE FIN: total={len(all_rows)} exitosos={exitos} "
+                        f"tasa={len(all_rows) / max(duration, 1):.2f} req/s -> {out}",
+                        flush=True,
+                    )
+                    break
+            else:
+                if n % 10 == 0:
+                    print(
+                        f"CLIENTE EN VIVO: ciclo={n} ok={ok} fail={fail} "
+                        f"acumulado={ok_total} ok / {fail_total} fail (rate={rate} req/s)",
+                        flush=True,
+                    )
 
-    exitos = sum(1 for r in rows if r["exito"])
-    print(
-        f"CLIENTE FIN: total={len(rows)} exitosos={exitos} "
-        f"tasa={len(rows) / max(duration, 1):.2f} req/s -> {out}",
-        flush=True,
-    )
+            await asyncio.sleep(max(0.0, 1.0 - (time.time() - tic)))
 
 
 def _tarjeta() -> str:
@@ -118,9 +136,10 @@ def main():
     ap.add_argument("--rate", type=int, default=_env_int("CLIENT_RATE", 20))
     ap.add_argument("--url", default=os.getenv("DISPATCHER_URL", "http://127.0.0.1:8000"))
     ap.add_argument("--timeout", type=float, default=float(os.getenv("REQUEST_TIMEOUT", "0.8")))
+    ap.add_argument("--loop", action="store_true", default=os.getenv("CLIENT_LOOP", "") == "1")
     args = ap.parse_args()
     try:
-        asyncio.run(main_async(args.out, args.duration, args.rate, args.url, args.timeout))
+        asyncio.run(main_async(args.out, args.duration, args.rate, args.url, args.timeout, args.loop))
     except BaseException:
         Path("client.err").write_text(
             "".join(__import__("traceback").format_exc()), encoding="utf-8"

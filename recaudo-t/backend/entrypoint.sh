@@ -8,5 +8,10 @@ if [ -n "$REPLICA_ID" ]; then
     exec python backend/replica/main.py
 fi
 
+if [ -n "$CLIENT_DISPATCHER_URL" ]; then
+    echo "[entrypoint] iniciando cliente de carga contra $CLIENT_DISPATCHER_URL"
+    exec python backend/client/client.py --url "$CLIENT_DISPATCHER_URL" --loop --rate "${CLIENT_RATE:-20}"
+fi
+
 echo "[entrypoint] iniciando dispatcher"
 exec python backend/dispatcher/main.py

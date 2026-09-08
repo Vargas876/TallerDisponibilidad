@@ -81,3 +81,18 @@ services:
         value: "8001"
       - key: REPLICA_ID
         value: C
+
+  - type: worker
+    name: recaudo-t-client
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile.render
+    autoDeploy: true
+    envVars:
+      - key: CLIENT_DISPATCHER_URL
+        value: https://recaudo-t-dispatcher.onrender.com
+      - key: CLIENT_RATE
+        value: "20"
+      - key: CLIENT_LOOP
+        value: "1"
