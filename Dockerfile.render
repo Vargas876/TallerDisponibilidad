@@ -1,0 +1,21 @@
+# RECAUDO-T — imagen del backend para Render (contexto de build = raíz del repo).
+# Espejo de recaudo-t/backend/Dockerfile con rutas repo-root. El flujo local
+# (docker-compose) sigue usando recaudo-t/backend/Dockerfile con context=./recaudo-t.
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+COPY recaudo-t/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY recaudo-t/backend ./backend
+
+RUN chmod +x backend/entrypoint.sh
+
+EXPOSE 8000 8001
+
+# El entrypoint elige el rol según REPLICA_ID (dispatcher por defecto)
+CMD ["sh", "/app/backend/entrypoint.sh"]

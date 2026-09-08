@@ -11,7 +11,7 @@ services:
     runtime: docker
     plan: free
     region: oregon
-    dockerfilePath: ./recaudo-t/backend/Dockerfile
+    dockerfilePath: ./Dockerfile.render
     healthCheckPath: /estado
     autoDeploy: true
     envVars:
@@ -39,7 +39,7 @@ services:
     runtime: docker
     plan: free
     region: oregon
-    dockerfilePath: ./recaudo-t/backend/Dockerfile
+    dockerfilePath: ./Dockerfile.render
     healthCheckPath: /ping
     autoDeploy: true
     envVars:
@@ -55,7 +55,7 @@ services:
     runtime: docker
     plan: free
     region: oregon
-    dockerfilePath: ./recaudo-t/backend/Dockerfile
+    dockerfilePath: ./Dockerfile.render
     healthCheckPath: /ping
     autoDeploy: true
     envVars:
@@ -71,7 +71,7 @@ services:
     runtime: docker
     plan: free
     region: oregon
-    dockerfilePath: ./recaudo-t/backend/Dockerfile
+    dockerfilePath: ./Dockerfile.render
     healthCheckPath: /ping
     autoDeploy: true
     envVars:
