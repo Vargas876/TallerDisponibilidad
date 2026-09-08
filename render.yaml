@@ -12,7 +12,6 @@ services:
     plan: free
     region: oregon
     dockerfilePath: ./recaudo-t/backend/Dockerfile
-    startCommand: python recaudo-t/backend/dispatcher/main.py
     healthCheckPath: /estado
     autoDeploy: true
     envVars:
@@ -41,7 +40,6 @@ services:
     plan: free
     region: oregon
     dockerfilePath: ./recaudo-t/backend/Dockerfile
-    startCommand: python recaudo-t/backend/replica/main.py
     healthCheckPath: /ping
     autoDeploy: true
     envVars:
@@ -58,7 +56,6 @@ services:
     plan: free
     region: oregon
     dockerfilePath: ./recaudo-t/backend/Dockerfile
-    startCommand: python recaudo-t/backend/replica/main.py
     healthCheckPath: /ping
     autoDeploy: true
     envVars:
@@ -75,7 +72,6 @@ services:
     plan: free
     region: oregon
     dockerfilePath: ./recaudo-t/backend/Dockerfile
-    startCommand: python recaudo-t/backend/replica/main.py
     healthCheckPath: /ping
     autoDeploy: true
     envVars:

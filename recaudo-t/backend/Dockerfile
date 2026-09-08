@@ -11,7 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ backend/
 
-EXPOSE 8000
+RUN chmod +x backend/entrypoint.sh
 
-# Comandos de servicio se definen en docker-compose.yml
-CMD ["python", "backend/dispatcher/main.py"]
+EXPOSE 8000 8001
+
+# El entrypoint elige el rol según REPLICA_ID (dispatcher por defecto)
+CMD ["sh", "/app/backend/entrypoint.sh"]
