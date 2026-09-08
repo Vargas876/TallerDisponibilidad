@@ -152,17 +152,26 @@ open http://localhost:3000
 
 ---
 
-## 5. Despliegue a Vercel (frontend)
+## 5. Despliegue en vivo
 
-El frontend es **standalone-ready** y no necesita servidor:
+Frontend **Vercel**: https://recaudo-t-frontend.vercel.app \
+Backend **Render** (blueprint `render.yaml`, raíz del repo):
 
-1. Importa `frontend/` en Vercel (framework Next.js; build `npm run build`).
-2. Variables de entorno (opcional): `NEXT_PUBLIC_DISPATCHER_URL` apunta tu
-   dispatcher público para la vista Live; en producción es `undefined`.
-3. Sin dispatcher en Vercel, la vista **Live** muestra "canal caído" y
-   **Resultados** usa las métricas embebidas (regenerables con
+- dispatcher:  https://recaudo-t-dispatcher.onrender.com
+- réplicas:    https://recaudo-t-replica-a.onrender.com  https://recaudo-t-replica-b.onrender.com  https://recaudo-t-replica-c.onrender.com
+
+`frontend/.env.production` fija `NEXT_PUBLIC_DISPATCHER_URL` al dispatcher de
+Render para que la vista **Live** funcione punta a punta (`wss://.../ws`).
+
+Build/uso:
+1. El blueprint despliega los 4 services (docker, entrypoint por `REPLICA_ID`);
+   cualquier push a `main` los re-despliega (`autoDeploy: true`).
+2. **Resultados** usa las métricas embebidas (regenerables con
    `python scripts/rebuild_defaults.py`) — verifica `fuente: incrustado` en
    `/api/metricas`; con dispatcher local la fuente es `live`.
+3. Caveat free tier: Render duerme las réplicas tras ~15 min de inactividad
+   (la monkeytype muestra "canal caído" hasta que un request/WS las despierta);
+   para demo continua usar plan `starter`.
 
 `scripts/rebuild_defaults.py` regenera `frontend/lib/defaultMetrics.ts` desde
 los resultados finales para que el despliegue muestre las cifras medidas.
