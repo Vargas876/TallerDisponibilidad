@@ -13,8 +13,10 @@ RUN npm run build
 FROM node:24-alpine
 ENV NODE_ENV=production
 WORKDIR /app
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
+COPY package.json package-lock.json ./
+RUN npm install --omit=dev --no-audit --no-fund
+COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
+COPY --from=build /app/next.config.ts ./next.config.ts
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["npx", "next", "start", "-p", "3000"]
