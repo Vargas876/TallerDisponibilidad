@@ -172,25 +172,32 @@ Backend **Render** (blueprint `render.yaml`, raíz del repo):
 
 - dispatcher:  https://recaudo-t-dispatcher.onrender.com
 - réplicas:    https://recaudo-t-replica-a.onrender.com  https://recaudo-t-replica-b.onrender.com  https://recaudo-t-replica-c.onrender.com
+- cliente de carga en vivo: https://recaudo-t-client.onrender.com (`/healthz`)
 
 `frontend/.env.production` fija `NEXT_PUBLIC_DISPATCHER_URL` al dispatcher de
 Render para que la vista **Live** funcione punta a punta (`wss://.../ws`).
 
 Build/uso:
-1. El blueprint despliega los 4 services (docker, entrypoint por `REPLICA_ID`);
-   cualquier push a `main` los re-despliega (`autoDeploy: true`).
-2. **Resultados** usa las métricas embebidas (regenerables con
+1. El blueprint despliega los 5 services (docker, entrypoint por rol:
+   `REPLICA_ID` → réplica, `CLIENT_DISPATCHER_URL` → cliente de carga,
+   por defecto dispatcher); cualquier push a `main` los re-despliega
+   (`autoDeploy: true`).
+2. **Tráfico 24/7**: `recaudo-t-client` es un *web service* (plan free de
+   Render no permite `background_worker`) que expone `/healthz` y en segundo
+   plano inyecta **5 req/s constantes** contra el dispatcher: la vista Live
+   queda permanentemente en modo real. 5 req/s en vez de 20 para no saturar
+   las instancias free (a 20 req/s el fan-out de 3 réplicas las ahoga y las
+   latencias suben a ~2 s); con plan `starter` se puede subir `CLIENT_RATE`.
+3. **Ping/Echo en Render**: `PING_TIMEOUT=1.0` (t) en el despliegue — las
+   instancias free responden ping hasta ~200-400 ms bajo carga, y con t=0.3
+   el monitor las marca CAÍDA erróneamente (t=0.3 local sigue siendo correcto).
+   Detección estructural T·k = 1 s × 2 = **~2 s** (dentro del presupuesto ≤ 3 s
+   del taller).
+4. **Resultados** usa las métricas embebidas (regenerables con
    `python scripts/rebuild_defaults.py`) — verifica `fuente: incrustado` en
    `/api/metricas`; con dispatcher local la fuente es `live`.
-3. Caveat free tier: Render duerme las réplicas tras ~15 min de inactividad
-   (la monkeytype muestra "canal caído" hasta que un request/WS las despierta);
-   para demo continua usar plan `starter`.
-4. **Vista Live en el despliegue**: si ningún `client.py` genera carga contra el
-   dispatcher, la gráfica de carga muestra —etiquetada— la medición real del
-   experimento E1 (20 req/s) para no quedar vacía. Para ver tráfico en vivo real
-   ejecuta en tu máquina una vez conectado:
-   `python recaudo-t/backend/client/client.py --url https://recaudo-t-dispatcher.onrender.com`.
-   En cuanto el dispatcher atiende solicitudes, la vista Live vuelve al modo en vivo.
+5. Caveat: si algún free instance llegara a dormirse (plan free), la api
+   wake; la vista Live mantiene el fallback etiquetado con la muestra E1.
 
 ### 5.1 Inyección de falla contra el despliegue (E1 en vivo)
 
@@ -237,6 +244,7 @@ backend/
   dispatcher/              dispatcher + monitor Ping/Echo + websocket
   replica/                 réplica de saldo (/ping /saldo /chaos/crash)
   client/client.py         carga y CSV de evidencias
+  client/worker.py         cliente en vivo 24/7 (web service + /healthz)
   injector/injector.py     inyección de CRASH
   metrics.py               consolidación → results/metrics.json
 scripts/

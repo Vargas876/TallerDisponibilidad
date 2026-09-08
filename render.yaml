@@ -1,11 +1,14 @@
 # RECAUDO-T — Render Blueprint
 # Despliega el backend completo: dispatcher (+ monitor Ping/Echo y websocket),
-# 3 réplicas y el cliente de carga en vivo (worker recaudo-t-client que genera
-# 20 req/s constantes para que la vista Live muestre tráfico real).
+# 3 réplicas y el cliente de carga en vivo (recaudo-t-client: web service cuyo
+# /healthz lo mantiene despierto en free tier — fija CLIENT_RATE=5 req/s para no
+# saturar las instancias free — y genera tráfico real para la vista Live).
 # Frontend ya está en Vercel (recaudo-t-frontend.vercel.app).
 #
-# NOTA (free tier): las instancias duermen a los ~15 min de inactividad; para una
-# demo viva continua usa plan: starter o superior.
+# NOTA free tier: no se permiten background_worker en free (por eso el cliente
+# es un web service) y las instancias free son lentas bajo carga sostenida:
+# PING_TIMEOUT=1.0 evita falsos CAÍDA (t=0.3 local es correcto, pero las
+# instancias free llegan a superar los 300ms de respuesta al ping).
 
 services:
   - type: web
@@ -24,7 +27,7 @@ services:
       - key: PING_INTERVAL
         value: "1"
       - key: PING_TIMEOUT
-        value: "0.3"
+        value: "1.0"
       - key: FAILURE_THRESHOLD
         value: "2"
       - key: RECOVERY_THRESHOLD
@@ -96,4 +99,6 @@ services:
       - key: CLIENT_DISPATCHER_URL
         value: https://recaudo-t-dispatcher.onrender.com
       - key: CLIENT_RATE
-        value: "20"
+        value: "5"
+      - key: REQUEST_TIMEOUT
+        value: "1.2"
