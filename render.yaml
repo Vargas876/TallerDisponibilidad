@@ -1,5 +1,7 @@
 # RECAUDO-T — Render Blueprint
-# Despliega el backend completo: dispatcher (+ monitor Ping/Echo) y 3 réplicas.
+# Despliega el backend completo: dispatcher (+ monitor Ping/Echo y websocket),
+# 3 réplicas y el cliente de carga en vivo (worker recaudo-t-client que genera
+# 20 req/s constantes para que la vista Live muestre tráfico real).
 # Frontend ya está en Vercel (recaudo-t-frontend.vercel.app).
 #
 # NOTA (free tier): las instancias duermen a los ~15 min de inactividad; para una
