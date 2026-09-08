@@ -63,7 +63,19 @@ def main():
     REPLICA_ID = sys.argv[1]
     REPLICA_PORT = int(sys.argv[2])
 
-    server = HTTPServer(("0.0.0.0", REPLICA_PORT), ReplicaHandler)
+    server = None
+    max_espera = 15
+    inicio = time.time()
+    while server is None:
+        try:
+            server = HTTPServer(("0.0.0.0", REPLICA_PORT), ReplicaHandler)
+        except OSError as e:
+            if time.time() - inicio > max_espera:
+                print(f"[{time.time():.3f}] Réplica {REPLICA_ID}: no pudo bindear puerto "
+                      f"{REPLICA_PORT}: {e}")
+                sys.exit(1)
+            time.sleep(1)
+
     print(f"[{time.time():.3f}] Réplica {REPLICA_ID} escuchando en puerto {REPLICA_PORT}")
     sys.stdout.flush()
 

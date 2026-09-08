@@ -1,0 +1,118 @@
+# RECAUDO-T — orquestación con Docker Compose
+#
+# Servicios de runtime:   dispatcher, replica-a/b/c, frontend
+# Servicios de herramientas (perfil "tools", bajo demanda):
+#   client, injector, metrics  → se ejecutan con `docker compose run --rm`
+#   (el orquestador en scripts/run_experiment.py los invoca así en --mode docker)
+#
+# Volúmenes: logs/ y results/ de la máquina host para inspección y evidencia.
+
+services:
+  dispatcher:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: recaudo-t-backend
+    command: python backend/dispatcher/main.py
+    working_dir: /app
+    environment: &dispatcher-env
+      DISPATCHER_HOST: 0.0.0.0
+      PING_INTERVAL: "1"
+      PING_TIMEOUT: "0.3"
+      FAILURE_THRESHOLD: "2"
+      RECOVERY_THRESHOLD: "2"
+      DISPATCHER_PORT: "8000"
+      DISPATCHER_URL: http://dispatcher:8000
+      MONITOR_LOG: logs/monitor.log
+      REPLICA_A_URL: http://replica-a:8001
+      REPLICA_B_URL: http://replica-b:8001
+      REPLICA_C_URL: http://replica-c:8001
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs
+      - ./results:/app/results
+
+  replica-a:
+    image: recaudo-t-backend
+    command: python backend/replica/main.py
+    working_dir: /app
+    environment: &replica-env
+      REPLICA_HOST: 0.0.0.0
+      REPLICA_PORT: "8001"
+      REPLICA_ID: A
+      REPLICA_BROKEN_SALDO: "0"
+    ports:
+      - "8001:8001"
+
+  replica-b:
+    image: recaudo-t-backend
+    command: python backend/replica/main.py
+    working_dir: /app
+    environment:
+      <<: *replica-env
+      REPLICA_ID: B
+    ports:
+      - "8002:8001"
+
+  replica-c:
+    image: recaudo-t-backend
+    command: python backend/replica/main.py
+    working_dir: /app
+    environment:
+      <<: *replica-env
+      REPLICA_ID: C
+    ports:
+      - "8003:8001"
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    image: recaudo-t-frontend
+    environment:
+      NEXT_PUBLIC_DISPATCHER_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./results:/results:ro
+
+  # ---- herramientas (perfil tools) ----
+  client:
+    image: recaudo-t-backend
+    working_dir: /app
+    entrypoint: ["python", "backend/client/client.py"]
+    command: []
+    profiles: ["tools"]
+    environment:
+      DISPATCHER_URL: http://dispatcher:8000
+      CLIENT_RATE: "20"
+      EXPERIMENT_DURATION: "40"
+    volumes:
+      - ./results:/app/results
+      - ./logs:/app/logs
+
+  injector:
+    image: recaudo-t-backend
+    working_dir: /app
+    entrypoint: ["python", "backend/injector/injector.py"]
+    command: []
+    profiles: ["tools"]
+    environment:
+      DISPATCHER_URL: http://dispatcher:8000
+    volumes:
+      - ./results:/app/results
+      - ./logs:/app/logs
+
+  metrics:
+    image: recaudo-t-backend
+    working_dir: /app
+    entrypoint: ["python", "backend/metrics.py"]
+    command: []
+    profiles: ["tools"]
+    environment:
+      MONITOR_LOG: logs/monitor.log
+      RESULTS_DIR: results
+    volumes:
+      - ./results:/app/results
+      - ./logs:/app/logs

@@ -1,8 +1,8 @@
 # Taller Disponibilidad II — Ping/Echo + Redundancia Activa
 
 ## Requisitos
-- Python 3.7 o superior
-- No se necesitan dependencias externas (solo stdlib)
+- Python 3.7 o superior (solo stdlib)
+- Node.js 18+ y npm (solo para compilar el dashboard React, una sola vez)
 
 ## Ejecución rápida
 
@@ -13,9 +13,45 @@ python run.py
 Este comando:
 1. Levanta 3 réplicas (puertos 5001, 5002, 5003)
 2. Levanta el dispatcher (puerto 5000)
-3. Ejecuta el cliente durante 40 segundos
-4. Inyecta una falla en la réplica B a los 15 segundos
-5. Genera los archivos de resultados
+3. Levanta el dashboard web (puerto 8000)
+4. Ejecuta el cliente durante 40 segundos
+5. Inyecta una falla en la réplica B a los 15 segundos
+6. Genera los archivos de resultados
+
+## Dashboard web (profesional — React + shadcn/ui)
+
+El dashboard es una SPA **React + TypeScript + Tailwind v4 + shadcn/ui + Recharts**
+con sidebar, KPIs con tonos, réplicas en vivo, bitácora con búsqueda/filtros y
+vista de resultados con gráficas.
+
+Compilar el frontend (requiere Node, se hace una vez):
+
+```bash
+cd dashboard-ui
+npm install
+npm run build
+cd ..
+```
+
+Levantar (durante o después del experimento):
+
+```bash
+python dashboard.py
+```
+
+Abrir http://127.0.0.1:8000
+
+- **En vivo**: estado de cada réplica (VIVA/CAÍDA, tarjetas con glow), KPIs,
+  bitácora del monitor en tiempo real con buscador y filtros por tipo de evento,
+  y datos de la última inyección de falla.
+- **Resultados**: selector de CSV (E0/E1/E2…), total/éxitos/fallos/% de éxito,
+  gráfica de solicitudes por segundo (éxitos vs fallos), distribución por
+  réplica y checklist de verificación del experimento.
+- Para desarrollo con hot-reload: `cd dashboard-ui && npm run dev` (http://127.0.0.1:5173).
+- **API JSON** del backend en el mismo origen: `/api/estado`, `/api/bitacora`,
+  `/api/inyector`, `/api/resultados`, `/api/resultado?archivo=...`.
+
+> Si `dashboard-ui/dist` no existe, `dashboard.py` sirve un fallback HTML simple.
 
 ## Archivos generados
 - `bitacora_monitor.log` — Log del monitor Ping/Echo
@@ -39,10 +75,13 @@ python replica.py C 5003
 # Terminal 2: Dispatcher
 python dispatcher.py
 
-# Terminal 3: Cliente
+# Terminal 3: Dashboard (opcional)
+python dashboard.py
+
+# Terminal 4: Cliente
 python client.py resultados/E1.csv
 
-# Terminal 4: Inyector (a los 15 segundos)
+# Terminal 5: Inyector (a los 15 segundos)
 python inyector.py B
 ```
 

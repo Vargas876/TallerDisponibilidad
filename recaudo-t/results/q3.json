@@ -1,0 +1,23 @@
+{
+  "escenario": "q3",
+  "config": {
+    "punica_con_saldo_roto": "B",
+    "duracion_s": 8,
+    "rate": 20
+  },
+  "cliente": {
+    "total": 160,
+    "exitosos": 160,
+    "tasa_exito": 100.0
+  },
+  "entregadas_por_B": 0,
+  "monitor_ve": {
+    "replica_B_estado": "VIVA",
+    "ping_OK": true
+  },
+  "redundancia_B": {
+    "total_requests": 148,
+    "successful_requests": 0,
+    "failed_requests": 148
+  }
+}

@@ -20,6 +20,8 @@ BASE_PORT = CONFIG["base_port"]
 DISPATCHER_PORT = CONFIG["dispatcher_port"]
 
 bitacora_lock = threading.Lock()
+total_solicitudes = 0
+total_lock = threading.Lock()
 
 
 class ReplicaState:
@@ -44,7 +46,7 @@ def log_bitacora(mensaje):
     timestamp = time.time()
     line = f"[{timestamp:.3f}] {mensaje}"
     with bitacora_lock:
-        with open("bitacora_monitor.log", "a") as f:
+        with open("bitacora_monitor.log", "a", encoding="utf-8") as f:
             f.write(line + "\n")
             f.flush()
     print(line)
@@ -94,13 +96,19 @@ class DispatcherHandler(BaseHTTPRequestHandler):
         self.wfile.write(payload)
 
     def do_GET(self):
+        global total_solicitudes
         path = urlparse(self.path).path
 
         if path == "/estado":
             estado = {rep.id: rep.estado for rep in replicas}
-            self._send_json(200, estado)
+            self._send_json(200, {
+                "estado": estado,
+                "total_solicitudes": total_solicitudes,
+            })
 
         elif path.startswith("/saldo/"):
+            with total_lock:
+                total_solicitudes += 1
             id_tarjeta = path.split("/")[-1]
             vivas = [rep for rep in replicas if rep.estado == "VIVA"]
 

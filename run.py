@@ -68,7 +68,7 @@ def main():
         print(f"  Réplica {rid} -> puerto {port} (PID {p.pid})")
         time.sleep(0.3)
 
-    print("[2/3] Iniciando dispatcher...")
+    print("[2/4] Iniciando dispatcher...")
     dispatcher = subprocess.Popen(
         [sys.executable, "dispatcher.py"],
         stdout=sys.stdout,
@@ -77,10 +77,19 @@ def main():
     processes.append(dispatcher)
     print(f"  Dispatcher -> puerto {DISPATCHER_PORT} (PID {dispatcher.pid})")
 
+    print("[3/4] Iniciando dashboard...")
+    dashboard = subprocess.Popen(
+        [sys.executable, "dashboard.py"],
+        stdout=sys.stdout,
+        stderr=sys.stderr
+    )
+    processes.append(dashboard)
+    print(f"  Dashboard -> http://127.0.0.1:8000 (PID {dashboard.pid})")
+
     print()
     time.sleep(2)
 
-    print("[3/3] Iniciando cliente...")
+    print("[4/4] Iniciando cliente...")
     client = subprocess.Popen(
         [sys.executable, "client.py", "resultados/E1.csv"],
         stdout=sys.stdout,
@@ -110,9 +119,13 @@ def main():
     print("EXPERIMENTO COMPLETADO")
     print("=" * 60)
     print("Archivos generados:")
-    print("  - bitacora_monitor.log  (bitácora del monitor)")
-    print("  - resultados/E1.csv     (CSV del cliente)")
-    print("  - timestamp_inyector.log (timestamp de inyección)")
+    print("  - bitacora_monitor.log    (bitácora del monitor)")
+    print("  - resultados/E1.csv       (CSV del cliente)")
+    print("  - timestamp_inyector.log  (timestamp de inyección)")
+    print()
+    print("Para ver los resultados en el dashboard web:")
+    print("  python dashboard.py   ->  http://127.0.0.1:8000")
+    print("  python analizar.py    ->  métricas en consola")
     print()
 
     cleanup()

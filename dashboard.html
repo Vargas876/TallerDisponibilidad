@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RECAUDO-T · Dashboard Disponibilidad</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --viva: #22c55e;
+    --caida: #ef4444;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 24px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  header h1 { font-size: 1.4rem; }
+  header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+  .badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .badge.on { color: var(--viva); border-color: var(--viva); }
+  .badge.off { color: var(--caida); border-color: var(--caida); }
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tab {
+    padding: 10px 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all .15s;
+  }
+  .tab.active { color: var(--text); border-color: var(--accent); background: rgba(56,189,248,.15); }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .card h3 { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .card .big { font-size: 1.6rem; font-weight: 700; }
+  .card .small { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+  .replicas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .replica-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    transition: all .2s;
+  }
+  .replica-card .id { font-size: 1.6rem; font-weight: 800; }
+  .replica-card .est { font-size: 0.85rem; font-weight: 700; margin-top: 8px; padding: 4px 10px; border-radius: 16px; display: inline-block; }
+  .replica-card.viva { border-color: var(--viva); }
+  .replica-card.caida { border-color: var(--caida); }
+  .replica-card.viva .est { color: #052e16; background: var(--viva); }
+  .replica-card.caida .est { color: #fff; background: var(--caida); }
+
+  .log-panel {
+    background: #0b1220;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'Cascadia Code', 'Consolas', monospace;
+    font-size: 0.8rem;
+    max-height: 420px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .log-line { padding: 2px 0; }
+  .log-line .ts { color: var(--muted); }
+  .log-line.caida { color: var(--caida); }
+  .log-line.viva { color: var(--viva); }
+
+  .hint { color: var(--muted); font-size: 0.8rem; margin-bottom: 12px; }
+  select, button {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .updating::after {
+    content: " · actualizando";
+    color: var(--accent);
+    font-size: 0.7rem;
+  }
+  .chart-box { margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🛡️ RECAUDO-T — Dashboard de Disponibilidad</h1>
+    <div class="sub">Ping/Echo (detección) + Redundancia Activa (recuperación)</div>
+  </div>
+  <span class="badge" id="statusBadge">⏳ Conectando…</span>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-view="vivo">En vivo</button>
+  <button class="tab" data-view="resultados">Resultados</button>
+</div>
+
+<!-- ============ VISTA EN VIVO ============ -->
+<section class="view active" id="vivo">
+  <h3 style="color:var(--muted);margin-bottom:12px;">Estado de las réplicas</h3>
+  <div class="replicas-grid" id="replicasGrid">
+    <div class="replica-card"><div class="id">…</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><h3>Solicitudes atendidas</h3><div class="big" id="contador">0</div><div class="small">desde el inicio</div></div>
+    <div class="card"><h3>Detectores activos</h3><div class="big" id="vivas">0</div><div class="small">réplicas VIVA</div></div>
+  </div>
+
+  <h3 style="color:var(--muted);margin-bottom:12px;">Bitácora del monitor</h3>
+  <div class="log-panel" id="logPanel"><div class="log-line">Cargando bitácora…</div></div>
+</section>
+
+<!-- ============ VISTA RESULTADOS ============ -->
+<section class="view" id="resultados">
+  <div class="row">
+    <label class="hint" for="csvSelect" style="margin:0;">Archivo de resultados:</label>
+    <select id="csvSelect"></select>
+    <button id="btnCargar">Cargar</button>
+  </div>
+
+  <div class="grid">
+    <div class="card"><h3>Total solicitudes</h3><div class="big" id="mTotal">–</div></div>
+    <div class="card"><h3>Éxitos</h3><div class="big" id="mExitosos">–</div></div>
+    <div class="card"><h3>Fallos</h3><div class="big" id="mFallidos">–</div></div>
+    <div class="card"><h3>% éxito</h3><div class="big" id="mPorcentaje">–</div></div>
+  </div>
+
+  <div style="display:flex;gap:20px;flex-wrap:wrap;">
+    <div class="card chart-box" style="flex:1;min-width:280px;">
+      <h3>Solicitudes por segundo (éxito vs fallo)</h3>
+      <canvas id="chartSerie"></canvas>
+    </div>
+    <div class="card chart-box" style="flex:1;min-width:280px;">
+      <h3>Escalamiento por réplica</h3>
+      <canvas id="chartReplicas"></canvas>
+    </div>
+  </div>
+</section>
+
+<script>
+const $ = (sel) => document.querySelector(sel);
+let chartSerie = null, chartReplicas = null;
+
+/* ---------- Tabs ---------- */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    tab.classList.add('active');
+    $('#vivo').classList.remove('active');
+    const target = tab.dataset.view;
+    $('#' + target).classList.add('active');
+    if (target === 'resultados') cargarResultado();
+  });
+});
+
+/* ---------- En vivo ---------- */
+async function refreshVivo() {
+try {
+      const res = await fetch('/api/estado');
+      const data = await res.json();
+      const badge = $('#statusBadge');
+      if (data.disponible) {
+        badge.textContent = '● Dispatcher en línea';
+        badge.className = 'badge on';
+      } else {
+        badge.textContent = '● Dispatcher fuera de línea';
+        badge.className = 'badge off';
+      }
+
+      // data.estado = { estado: {...}, total_solicitudes: N }
+      const inner = data.estado || {};
+      const state = inner.estado || inner;
+      const total = inner.total_solicitudes ?? 0;
+      const grid = $('#replicasGrid');
+      const ids = Object.keys(state);
+      let vivas = 0;
+      if (ids.length) {
+        grid.innerHTML = ids.map(id => {
+          const est = state[id];
+          if (est === 'VIVA') vivas++;
+          const cls = est === 'CAIDA' ? 'caida' : 'viva';
+          return `<div class="replica-card ${cls}">
+            <div class="id">${id}</div>
+            <div class="est">${est === 'CAIDA' ? 'CAÍDA' : 'VIVA'}</div>
+          </div>`;
+        }).join('');
+      } else {
+        grid.innerHTML = '<div class="replica-card"><div class="id">—</div><div class="est">sin datos</div></div>';
+      }
+      $('#vivas').textContent = vivas;
+      $('#contador').textContent = total;
+    } catch (e) {
+    $('#statusBadge').textContent = '● Error de conexión';
+    $('#statusBadge').className = 'badge off';
+  }
+
+  try {
+    const res = await fetch('/api/bitacora');
+    const data = await res.json();
+    const lines = (data.lineas || []).slice(-500);
+    $('#logPanel').innerHTML = lines.map(line => {
+      let cls = 'log-line';
+      if (/CAIDA/.test(line)) cls += ' caida';
+      else if (/VIVA|recuperada/.test(line)) cls += ' viva';
+      const pretty = line.replace(/^\[(\d+\.\d+)\]/, (m, ts) => {
+        const d = new Date(parseFloat(ts) * 1000);
+        return `[${d.toLocaleTimeString('es-AR')}]`;
+      });
+      return `<div class="${cls}">${escapeHtml(pretty)}</div>`;
+    }).join('');
+    $('#logPanel').scrollTop = $('#logPanel').scrollHeight;
+  } catch (e) {}
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ---------- Resultados ---------- */
+async function cargarResultado() {
+  try {
+    const res = await fetch('/api/resultados');
+    const data = await res.json();
+    const sel = $('#csvSelect');
+    sel.innerHTML = (data.archivos || []).map(a =>
+      `<option value="${a}">${a}</option>`
+    ).join('') || '<option value="">Sin resultados</option>';
+    if (data.archivos && data.archivos.length) {
+      await mostrarResultado(data.archivos[0]);
+    }
+  } catch (e) {}
+}
+
+async function mostrarResultado(archivo) {
+  const res = await fetch('/api/resultado?archivo=' + encodeURIComponent(archivo));
+  const data = await res.json();
+  if (data.error) return;
+
+  $('#mTotal').textContent = data.total;
+  $('#mExitosos').textContent = data.exitosos;
+  $('#mFallidos').textContent = data.fallidos;
+  $('#mPorcentaje').textContent = data.porcentaje + '%';
+
+  // Gráfica serie temporal
+  if (chartSerie) chartSerie.destroy();
+  chartSerie = new Chart($('#chartSerie'), {
+    type: 'bar',
+    data: {
+      labels: data.serie.map(s => s.seg),
+      datasets: [
+        { label: 'Éxitos', data: data.serie.map(s => s.ok), backgroundColor: '#22c55e' },
+        { label: 'Fallos', data: data.serie.map(s => s.fail), backgroundColor: '#ef4444' },
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { x: { stacked: true, title: { display: true, text: 'Segundo' } }, y: { stacked: true } },
+      plugins: { legend: { labels: { color: '#e2e8f0' } } }
+    }
+  });
+
+  // Gráfica réplicas
+  if (chartReplicas) chartReplicas.destroy();
+  const reps = Object.keys(data.replicas);
+  chartReplicas = new Chart($('#chartReplicas'), {
+    type: 'pie',
+    data: {
+      labels: reps,
+      datasets: [{ data: reps.map(r => data.replicas[r]), backgroundColor: ['#38bdf8','#a78bfa','#fbbf24','#34d399','#f472b6'] }]
+    },
+    options: { responsive: true, plugins: { legend: { labels: { color: '#e2e8f0' } } } }
+  });
+}
+
+$('#btnCargar').addEventListener('click', () => {
+  const archivo = $('#csvSelect').value;
+  if (archivo) mostrarResultado(archivo);
+});
+
+/* ---------- Init ---------- */
+setInterval(refreshVivo, 1000);
+refreshVivo();
+</script>
+</body>
+</html>

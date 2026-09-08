@@ -18,9 +18,13 @@ def main():
     if len(sys.argv) > 1:
         output_file = sys.argv[1]
 
+    duracion = DURACION
+    if len(sys.argv) > 2:
+        duracion = float(sys.argv[2])
+
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-    print(f"Cliente iniciado. Duración: {DURACION}s, Tasa: {TASA} req/s")
+    print(f"Cliente iniciado. Duración: {duracion}s, Tasa: {TASA} req/s")
     print(f"Salida: {output_file}")
     sys.stdout.flush()
 
@@ -35,7 +39,7 @@ def main():
 
         while True:
             elapsed = time.time() - start_time
-            if elapsed >= DURACION:
+            if elapsed >= duracion:
                 break
 
             timestamp_envio = time.time()

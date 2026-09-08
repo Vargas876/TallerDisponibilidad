@@ -1,0 +1,230 @@
+{
+  "experiment": "e1",
+  "fecha": 1788884363.5725183,
+  "total_requests": 800,
+  "successful_requests": 800,
+  "failed_requests": 0,
+  "success_rate": 100.0,
+  "latency_mean_ms": 219.41,
+  "distribucion_por_replica": {
+    "A": 347,
+    "C": 256,
+    "B": 197
+  },
+  "serie_por_segundo": [
+    {
+      "seg": 0,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 1,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 2,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 3,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 4,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 5,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 6,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 7,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 8,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 9,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 10,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 11,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 12,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 13,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 14,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 15,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 16,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 17,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 18,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 19,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 20,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 21,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 22,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 23,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 24,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 25,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 26,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 27,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 28,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 29,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 30,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 31,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 32,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 33,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 34,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 35,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 36,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 37,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 38,
+      "ok": 20,
+      "fail": 0
+    },
+    {
+      "seg": 39,
+      "ok": 20,
+      "fail": 0
+    }
+  ],
+  "inyeccion": {
+    "ts": 1788884337.965,
+    "replica": "B"
+  },
+  "deteccion": {
+    "ts": 1788884340.104,
+    "tiempo_s": 2.139,
+    "replica": "B"
+  },
+  "recuperacion": {
+    "ts": 1788884345.867,
+    "replica": "B",
+    "tiempo_s": 5.763
+  }
+}

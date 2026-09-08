@@ -1,0 +1,15 @@
+# Dependencias / builds grandes
+node_modules/
+dashboard-ui/node_modules/
+dashboard-ui/dist/
+.venv/
+.21st/
+*/__pycache__/
+*.pyc
+
+# Logs de experimentos viejos de la raíz
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db

@@ -1,0 +1,12 @@
+# Contexto raíz para la imagen del backend (backend/Dockerfile)
+.venv
+frontend
+node_modules
+logs
+results
+.git
+*.log
+.env
+__pycache__
+*.pyc
+.DS_Store

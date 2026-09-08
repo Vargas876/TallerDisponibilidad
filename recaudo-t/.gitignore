@@ -1,0 +1,30 @@
+# Entorno y dependencias
+.venv/
+node_modules/
+
+# Builds
+.next/
+out/
+dist/
+.vercel/
+
+# Artefactos transitorios de ejecución
+logs/*.log
+results/*.csv
+results/injection_e1.log
+.live_pids.txt
+
+# Python
+__pycache__/
+*.pyc
+
+# Entorno local del frontend
+frontend/.env.local
+frontend/.env*.local
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Se versionan como evidencia: results/metrics.json, results/q3.json
+!
