@@ -185,6 +185,12 @@ Build/uso:
 3. Caveat free tier: Render duerme las réplicas tras ~15 min de inactividad
    (la monkeytype muestra "canal caído" hasta que un request/WS las despierta);
    para demo continua usar plan `starter`.
+4. **Vista Live en el despliegue**: si ningún `client.py` genera carga contra el
+   dispatcher, la gráfica de carga muestra —etiquetada— la medición real del
+   experimento E1 (20 req/s) para no quedar vacía. Para ver tráfico en vivo real
+   ejecuta en tu máquina una vez conectado:
+   `python recaudo-t/backend/client/client.py --url https://recaudo-t-dispatcher.onrender.com`.
+   En cuanto el dispatcher atiende solicitudes, la vista Live vuelve al modo en vivo.
 
 `scripts/rebuild_defaults.py` regenera `frontend/lib/defaultMetrics.ts` desde
 los resultados finales para que el despliegue muestre las cifras medidas.

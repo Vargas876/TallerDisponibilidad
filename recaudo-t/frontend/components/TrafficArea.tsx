@@ -11,11 +11,19 @@ import {
 } from "recharts";
 import type { PuntoSerie } from "@/lib/types";
 
-export function TrafficArea({ serie }: { serie: PuntoSerie[] }) {
+export function TrafficArea({
+  serie,
+  demo = false,
+}: {
+  serie: PuntoSerie[];
+  demo?: boolean;
+}) {
   return (
     <div className="card px-4 py-4">
       <div className="mb-3 flex items-center justify-between">
-        <span className="mono-label text-faint">Carga — enmascaramiento en vivo</span>
+        <span className="mono-label text-faint">
+          Carga — {demo ? "muestra del experimento E1 (medición)" : "enmascaramiento en vivo"}
+        </span>
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-2 text-[0.7rem] text-mut tabular">
             <span className="dot dot-ok" /> ok
@@ -93,6 +101,17 @@ export function TrafficArea({ serie }: { serie: PuntoSerie[] }) {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+      {demo && (
+        <p className="mt-3 border-t border-line pt-3 text-[0.68rem] leading-relaxed text-mut tabular">
+          Sin tráfico de cliente en vivo: al abrir el panel no hay ningún
+          `client.py` generando solicitudes contra el dispatcher. La gráfica
+          muestra la medición real del experimento E1 (20 req/s). Para ver carga
+          en vivo ejecuta:
+          <code className="ml-1 font-mono text-ink">
+            python backend/client/client.py --url https://recaudo-t-dispatcher.onrender.com
+          </code>
+        </p>
+      )}
     </div>
   );
 }

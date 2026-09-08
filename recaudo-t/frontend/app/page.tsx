@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useDispatcher } from "@/lib/useDispatcher";
+import { METRICAS_E1 } from "@/lib/defaultMetrics";
 import { fmtAgo, fmtInt, fmtUptime } from "@/lib/format";
 import { KpiCell } from "@/components/KpiCell";
 import { ReplicaCard } from "@/components/ReplicaCard";
@@ -23,6 +24,10 @@ export default function LivePage() {
   const repOrdenadas = [...(snapshot?.replicas ?? [])].sort((a, b) =>
     a.id.localeCompare(b.id),
   );
+
+  const sinTraficoCliente =
+    conectado && (snapshot?.total_solicitudes ?? 0) === 0;
+  const serieVis = sinTraficoCliente ? METRICAS_E1.serie_por_segundo : serie;
 
   return (
     <main className="mx-auto max-w-7xl px-5 pb-16 pt-8">
@@ -66,7 +71,7 @@ export default function LivePage() {
       </div>
 
       <div className="mb-6">
-        <TrafficArea serie={serie} />
+        <TrafficArea serie={serieVis} demo={sinTraficoCliente} />
       </div>
 
       <div className="grid gap-3 lg:grid-cols-2">
