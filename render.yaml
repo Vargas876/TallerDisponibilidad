@@ -1,0 +1,87 @@
+# RECAUDO-T — Render Blueprint
+# Despliega el backend completo: dispatcher (+ monitor Ping/Echo) y 3 réplicas.
+# Frontend ya está en Vercel (recaudo-t-frontend.vercel.app).
+#
+# NOTA (free tier): las instancias duermen a los ~15 min de inactividad; para una
+# demo viva continua usa plan: starter o superior.
+
+services:
+  - type: web
+    name: recaudo-t-dispatcher
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./recaudo-t/backend/Dockerfile
+    startCommand: python recaudo-t/backend/dispatcher/main.py
+    healthCheckPath: /estado
+    autoDeploy: true
+    envVars:
+      - key: DISPATCHER_HOST
+        value: 0.0.0.0
+      - key: DISPATCHER_PORT
+        value: "8000"
+      - key: PING_INTERVAL
+        value: "1"
+      - key: PING_TIMEOUT
+        value: "0.3"
+      - key: FAILURE_THRESHOLD
+        value: "2"
+      - key: RECOVERY_THRESHOLD
+        value: "2"
+      - key: REPLICA_A_URL
+        value: https://recaudo-t-replica-a.onrender.com
+      - key: REPLICA_B_URL
+        value: https://recaudo-t-replica-b.onrender.com
+      - key: REPLICA_C_URL
+        value: https://recaudo-t-replica-c.onrender.com
+
+  - type: web
+    name: recaudo-t-replica-a
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./recaudo-t/backend/Dockerfile
+    startCommand: python recaudo-t/backend/replica/main.py
+    healthCheckPath: /ping
+    autoDeploy: true
+    envVars:
+      - key: REPLICA_HOST
+        value: 0.0.0.0
+      - key: REPLICA_PORT
+        value: "8001"
+      - key: REPLICA_ID
+        value: A
+
+  - type: web
+    name: recaudo-t-replica-b
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./recaudo-t/backend/Dockerfile
+    startCommand: python recaudo-t/backend/replica/main.py
+    healthCheckPath: /ping
+    autoDeploy: true
+    envVars:
+      - key: REPLICA_HOST
+        value: 0.0.0.0
+      - key: REPLICA_PORT
+        value: "8001"
+      - key: REPLICA_ID
+        value: B
+
+  - type: web
+    name: recaudo-t-replica-c
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./recaudo-t/backend/Dockerfile
+    startCommand: python recaudo-t/backend/replica/main.py
+    healthCheckPath: /ping
+    autoDeploy: true
+    envVars:
+      - key: REPLICA_HOST
+        value: 0.0.0.0
+      - key: REPLICA_PORT
+        value: "8001"
+      - key: REPLICA_ID
+        value: C
