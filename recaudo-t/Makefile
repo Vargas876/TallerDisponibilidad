@@ -10,7 +10,7 @@ NPM     ?= npm
 RUNTIME = dispatcher replica-a replica-b replica-c frontend
 
 .PHONY: help setup up down logs build frontend-build \
-        dev live smoke e0 e1 q3 e0-docker e1-docker clean
+        dev live smoke e0 e1 q3 demo-live e0-docker e1-docker clean
 
 help: ## listar objetivos
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -50,6 +50,9 @@ e1: ## experimento E1 local (inyección de falla + recuperación)
 
 q3: ## escenario Q3: saldo roto con ping OK (limitación del Ping/Echo)
 	$(PY) scripts/scenario_q3.py
+
+demo-live: ## E1 en vivo contra el despliegue de Render (requiere RENDER_TOKEN y --target)
+	$(PY) scripts/demo_live.py --target $(TARGET) $(ARGS)
 
 e0-docker: ## experimento E0 sobre Docker
 	$(PY) scripts/run_experiment.py e0 --mode docker

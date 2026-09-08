@@ -1,0 +1,45 @@
+{
+  "escenario": "E1_vivo",
+  "target": "C",
+  "urls": {
+    "dispatcher": "https://recaudo-t-dispatcher.onrender.com",
+    "replica": "https://recaudo-t-replica-c.onrender.com"
+  },
+  "inyeccion": 1788894106.77,
+  "deteccion": {
+    "ts": 1788894111.48,
+    "delta_s": 4.71
+  },
+  "mascara_de_fallas": {
+    "solicitudes_ok": 9,
+    "fallos": 0,
+    "duracion_s": 6
+  },
+  "recuperacion": {
+    "ts": 1788894121.722,
+    "delta_s_desde_deteccion": 10.242
+  },
+  "reinicio_espontaneo_sin_ventana": false,
+  "notas": null,
+  "estado_final": {
+    "disponible": true,
+    "replicas_viva": 3
+  },
+  "replica_final": {
+    "id": "C",
+    "url": "https://recaudo-t-replica-c.onrender.com",
+    "status": "VIVA",
+    "consecutive_failures": 0,
+    "consecutive_successes": 1,
+    "last_ping": 1788894121.1161249,
+    "latency_ms": 50.1,
+    "last_ok": null,
+    "last_down": 1788894111.1200097,
+    "last_up": 1788894120.122352,
+    "total_requests": 11,
+    "successful_requests": 11,
+    "failed_requests": 0,
+    "last_error": null,
+    "disponible": true
+  }
+}

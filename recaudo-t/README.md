@@ -192,6 +192,38 @@ Build/uso:
    `python recaudo-t/backend/client/client.py --url https://recaudo-t-dispatcher.onrender.com`.
    En cuanto el dispatcher atiende solicitudes, la vista Live vuelve al modo en vivo.
 
+### 5.1 Inyección de falla contra el despliegue (E1 en vivo)
+
+El contrato de las réplicas incluye `POST /chaos/crash` (suicidio del proceso);
+Render detecta la salida y relanza la réplica. Para probar el escenario de caída
+punta a punta sobre Render (sin tocar código, con evidencia en `results/`):
+
+```powershell
+# CRASH a la réplica C → el monitor la marca CAÍDA (~T·k=2-5s), la redundancia
+# enmascara la falla (0 errores visibles) y se mide la recuperación.
+$env:RENDER_TOKEN = "rnd_..."   # key de la API de Render para --redeploy
+.\.venv\Scripts\python.exe scripts\demo_live.py --target C `
+    --service-id srv-<replica-c> --redeploy --timeout-recover 240
+```
+
+Resultado de una corrida real (evidencia `results/demo_live.json` +
+`results/injection_live.log`):
+
+| Paso | Medido |
+|---|---|
+| Inyección (`/chaos/crash`) | t = +0 s |
+| Detección del monitor → C **CAIDA** | **+4.71 s** (T·k≈2-5 s) |
+| Máscara de fallas (tráfico durante la caída) | 9 OK / 0 fallos (dispatcher disponible) |
+| Recuperación → C VIVA | **+10.24 s** tras la detección |
+
+El script implementa el protocolo del taller sobre el despliegue: ancla el
+timestamp de inyección, observa el estado hasta la transición CAIDA, emite
+solicitudes /saldo para evidenciar el masking y espera la vuelta a VIVA. Si
+Render relanza la réplica antes de que el monitor la marcara (reinicio
+espontáneo sin ventana), el JSON lo reporta con `reinicio_espontaneo_sin_ventana`.
+
+El `Makefile` también ofrece `make demo-live` (lee `RENDER_TOKEN` del entorno).
+
 `scripts/rebuild_defaults.py` regenera `frontend/lib/defaultMetrics.ts` desde
 los resultados finales para que el despliegue muestre las cifras medidas.
 
@@ -210,6 +242,7 @@ backend/
 scripts/
   run_experiment.py        orquestador E0/E1 (local|docker)
   scenario_q3.py           escenario de saldo roto → results/q3.json
+  demo_live.py             E1 en vivo contra Render (detección+masking+recuperación)
   smoke_live.py            prueba punta a punta (pila + frontend + WS)
   dev_local.py             pila local en primer plano
   rebuild_defaults.py      regenera métricas embebidas del frontend
