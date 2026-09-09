@@ -114,6 +114,7 @@ def snapshot(store) -> dict:
         "disponible": store.disponible(),
         "replicas_viva": store.count(),
         "replicas": [r.snapshot() for r in store.all()],
+        "estado": {r.id: r.status for r in store.all()},  # contrato del taller: {"A":"VIVA","B":"CAIDA",...}
         "total_solicitudes": store.total_solicitudes,
         "last_detection": store.last_detection,
         "uptime_s": round(time.time() - store.start_time, 1),
