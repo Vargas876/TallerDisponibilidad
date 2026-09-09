@@ -9,8 +9,8 @@ dist/
 .vercel/
 
 # Artefactos transitorios de ejecución
-logs/*.log
-logs/*.err
+*.log
+*.err
 results/*.csv
 results/injection_e1.log
 .live_pids.txt

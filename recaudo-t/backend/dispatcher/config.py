@@ -45,6 +45,11 @@ def dispatcher_settings():
         "recovery_threshold": _int("RECOVERY_THRESHOLD", 2),
         # tiempo límite para la respuesta al cliente (redundancia activa)
         "request_timeout": _float("REQUEST_TIMEOUT", 0.8),
+        # orígenes permitidos para /chaos/* (frontend en Vercel)
+        "cors_origins": os.getenv(
+            "CORS_ORIGINS",
+            "http://localhost:3000,http://127.0.0.1:3000,https://recaudo-t-frontend.vercel.app",
+        ),
         # registro
         "monitor_log": os.getenv("MONITOR_LOG", "logs/monitor.log"),
         # réplicas

@@ -8,6 +8,7 @@ import { fmtAgo, fmtInt, fmtUptime } from "@/lib/format";
 import { KpiCell } from "@/components/KpiCell";
 import { ReplicaCard } from "@/components/ReplicaCard";
 import { DetectionStamp } from "@/components/DetectionStamp";
+import { ScenarioPanel } from "@/components/ScenarioPanel";
 import { TrafficArea } from "@/components/TrafficArea";
 import { Timeline } from "@/components/Timeline";
 
@@ -73,6 +74,8 @@ export default function LivePage() {
       <div className="mb-6">
         <TrafficArea serie={serieVis} demo={sinTraficoCliente} />
       </div>
+
+      <ScenarioPanel replicas={snapshot?.replicas ?? []} />
 
       <div className="grid gap-3 lg:grid-cols-2">
         <DetectionStamp replica={ultimoEvento?.replica ?? snapshot?.last_detection?.replica ?? null} ts={ultimoEvento?.ts ?? snapshot?.last_detection?.at ?? null} />

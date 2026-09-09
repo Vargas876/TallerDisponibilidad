@@ -15,6 +15,7 @@ export interface ReplicaState {
   successful_requests: number;
   failed_requests: number;
   last_error: string | null;
+  saldo_roto: boolean;
   disponible: boolean;
 }
 

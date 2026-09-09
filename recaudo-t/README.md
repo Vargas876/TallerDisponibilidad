@@ -72,16 +72,18 @@ Nota: E1 se ejecutó dos veces y ambas detecciones fueron ≈2 s
    cliente ───────▶ │  /saldo/{tarjeta}  redundancia activa          │
  (20 req/s)         │  /estado  estado y contadores por réplica      │
                     │  /ws      telemetría en vivo (WebSocket)       │
+                    │  /chaos/crash/{id}  · /chaos/broken/{id}  (CORS)│
                     │  Ping/Echo cada T=1s → decide VIVA/CAÍDA        │
                     └───┬───────────┬───────────┬───────────────────┘
                         │ ping/echo │           │
                  replica-a:8001 ┌───┴─┐ replica-c:8003
-                     replica-b:8002  (3 réplicas /saldo, /ping, /chaos/crash)
+                     replica-b:8002  (3 réplicas /saldo, /ping, /chaos/crash, /chaos/broken)
 ```
 
 - **Réplica (`backend/replica/`)** — contrato de saldo determinístico por
   tarjeta (`sha256(REPLICA_ID:tarjeta)`), `/ping`, `/saldo/{id}`,
-  `/chaos/crash` (suicidio para inyección) y modo `REPLICA_BROKEN_SALDO`.
+  `/chaos/crash` (suicidio para inyección), `/chaos/broken` (toggle Q3 en
+  vivo, sin reiniciar) y modo `REPLICA_BROKEN_SALDO`.
 - **Dispatcher (`backend/dispatcher/`)** — estado por réplica (Ping/Echo con
   umbrales T/t/k), **redundancia activa**: cada solicitud se dispara en paralelo
   a todas las réplicas VIVA y se **devuelve la primera respuesta válida**,
@@ -99,7 +101,9 @@ Nota: E1 se ejecutó dos veces y ambas detecciones fueron ≈2 s
 - **Frontend (`frontend/`)** — Next.js 16 + React 19 + Tailwind 4: **Live**
   (KPIs, estado de réplicas, tráfico en tiempo real vía WebSocket, Detection
   Stamp y línea de tiempo) y **Resultados** (gráficas E0/E1 con bandas de
-  inyección/detección/recuperación y las respuestas Q1–Q5).
+  inyección/detección/recuperación y las respuestas Q1–Q5). El panel
+  **Escenarios del taller** dispara los fallos desde el navegador
+  (`POST /chaos/*` al dispatcher con CORS): Tumbar (E1) y Saldo roto (Q3).
 
 ---
 
@@ -241,8 +245,8 @@ los resultados finales para que el despliegue muestre las cifras medidas.
 ```
 config/.env                configuración del taller
 backend/
-  dispatcher/              dispatcher + monitor Ping/Echo + websocket
-  replica/                 réplica de saldo (/ping /saldo /chaos/crash)
+  dispatcher/              dispatcher + monitor Ping/Echo + websocket + /chaos/* (CORS)
+  replica/                 réplica de saldo (/ping /saldo /chaos/crash /chaos/broken)
   client/client.py         carga y CSV de evidencias
   client/worker.py         cliente en vivo 24/7 (web service + /healthz)
   injector/injector.py     inyección de CRASH

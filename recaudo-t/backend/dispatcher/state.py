@@ -29,6 +29,7 @@ class ReplicaState:
     successful_requests: int = 0
     failed_requests: int = 0
     last_error: str | None = field(default=None)
+    saldo_roto: bool = False
 
     def snapshot(self) -> dict:
         base = asdict(self)
