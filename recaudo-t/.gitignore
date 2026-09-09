@@ -11,6 +11,7 @@ dist/
 # Artefactos transitorios de ejecución
 *.log
 *.err
+!frontend/public/csv/*.log
 results/*.csv
 results/injection_e1.log
 .live_pids.txt
