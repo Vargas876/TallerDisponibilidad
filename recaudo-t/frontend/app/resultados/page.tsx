@@ -122,6 +122,41 @@ export default function ResultadosPage() {
       ) : null}
 
       <QaPanel items={[...PREGUNTAS]} fuente={payload.fuente} />
+
+      <div className="card mb-6 mt-6 px-4 py-4">
+        <div className="mb-3 flex items-baseline justify-between">
+          <div>
+            <p className="eyebrow mb-1">Evidencia cruda</p>
+            <h2 className="text-lg font-semibold tracking-tight text-ink">
+              Descargá los CSV de las corridas
+            </h2>
+          </div>
+          <span className="mono-label text-faint hidden md:block">
+            una fila por solicitud · servidos por /csv
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {[
+            ["e0.csv", "E0 sin fallas"],
+            ["e1.csv", "E1 con inyección"],
+            ["q3.csv", "Q3 saldo roto"],
+            ["injection_e1.log", "inyección E1"],
+            ["injection_live.log", "E1 en vivo (Render)"],
+          ].map(([archivo, detalle]) => (
+            <a
+              key={archivo}
+              href={`/csv/${archivo}`}
+              download
+              className="px-3 py-1.5 text-[0.72rem] font-medium tracking-[0.15em] uppercase transition-colors border border-faint/30 text-mut hover:border-line hover:text-ink"
+            >
+              {archivo}
+              <span className="mono-label ml-2 normal-case tracking-normal text-faint">
+                {detalle}
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
     </main>
   );
 }

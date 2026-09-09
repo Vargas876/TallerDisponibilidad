@@ -10,7 +10,7 @@ NPM     ?= npm
 RUNTIME = dispatcher replica-a replica-b replica-c frontend
 
 .PHONY: help setup up down logs build frontend-build \
-        dev live smoke e0 e1 q3 demo-live e0-docker e1-docker clean
+        dev live smoke e0 e1 q3 demo-live e0-docker e1-docker publish-csvs clean
 
 help: ## listar objetivos
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -53,6 +53,9 @@ q3: ## escenario Q3: saldo roto con ping OK (limitación del Ping/Echo)
 
 demo-live: ## E1 en vivo contra el despliegue de Render (requiere RENDER_TOKEN y --target)
 	$(PY) scripts/demo_live.py --target $(TARGET) $(ARGS)
+
+publish-csvs: ## copiar evidencias CSV/logs a frontend/public/csv (descargables en Vercel)
+	$(PY) scripts/publish_csv.py
 
 e0-docker: ## experimento E0 sobre Docker
 	$(PY) scripts/run_experiment.py e0 --mode docker
